@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mobile Code Editor</title>
+
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css" />
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/format/formatting.min.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        background: #1e1e1e;
+        color: #fff;
+        font-family: Arial;
+    }
+
+    header {
+        background: #111;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: #333;
+        color: white;
+        font-size: 14px;
+    }
+
+    button:active {
+        background: #444;
+    }
+
+    #editor {
+        height: 85vh;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <button onclick="newFile()">New</button>
+    <button onclick="document.getElementById('fileInput').click()">Open</button>
+    <button onclick="saveFile()">Save</button>
+    <button onclick="formatCode()">Format</button>
+    <button onclick="preview()">Preview</button>
+</header>
+
+<input type="file" id="fileInput" accept=".html,.css,.js" />
+
+<textarea id="editor"></textarea>
+
+<script>
+/* ---------------------------
+   INIT CODEMIRROR EDITOR
+------------------------------ */
+var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    lineNumbers: true,
+    mode: "htmlmixed",
+    theme: "dracula",
+    autoCloseTags: true,
+    autoCloseBrackets: true,
+});
+
+/* ---------------------------
+   NEW FILE
+------------------------------ */
+function newFile() {
+    if (confirm("Clear editor?")) {
+        editor.setValue("");
+    }
+}
+
+/* ---------------------------
+   OPEN FILE
+------------------------------ */
+document.getElementById("fileInput").addEventListener("change", function (event) {
+    let file = event.target.files[0];
+    if (!file) return;
+
+    let reader = new FileReader();
+    reader.onload = () => editor.setValue(reader.result);
+    reader.readAsText(file);
+});
+
+/* ---------------------------
+   SAVE FILE
+------------------------------ */
+function saveFile() {
+    let text = editor.getValue();
+    let blob = new Blob([text], { type: "text/html" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "code.html";
+    a.click();
+}
+
+/* ---------------------------
+   FORMAT CODE
+------------------------------ */
+function formatCode() {
+    let totalLines = editor.lineCount();
+    editor.autoFormatRange({ line: 0, ch: 0 }, { line: totalLines });
+}
+
+/* ---------------------------
+   LIVE PREVIEW
+------------------------------ */
+function preview() {
+    let code = editor.getValue();
+    let newWin = window.open("", "_blank");
+    newWin.document.open();
+    newWin.document.write(code);
+    newWin.document.close();
+}
+</script>
+
+</body>
+</html>
